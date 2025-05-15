@@ -8,6 +8,8 @@ import {
 import { useWeatherRepository } from "./useWeatherRepository";
 import { AppSettingsContext } from "../../settings/AppSettingsProvider";
 import type { Weather } from "../../../models/weather";
+import { useQuery } from "@tanstack/react-query";
+import { useWeatherQuery } from "./useWeatherQuery";
 
 type WeatherStatus = "initial" | "loading" | "failure" | "success";
 
@@ -65,43 +67,38 @@ export const useWeatherView = () => {
   const repo = useWeatherRepository();
 
   const { temperatureUnits, setWeatherCondition } = context;
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState("Taipei");
 
+  const query = useWeatherQuery(city);
   const fetchWeather = useCallback(async (city: string) => {
-    dispatch({ type: "FETCH_START" });
-    try {
-      const weather = await repo.getWeather(city);
-      dispatch({ type: "FETCH_SUCCESS", payload: weather });
-      setWeatherCondition(weather.condition);
-    } catch (e) {
-      dispatch({ type: "FETCH_FAILURE" });
+    if (!(city.trim().length > 0)) return;
+    const { data, isSuccess } = await query.refetch();
+    if (isSuccess && data) {
+      setWeatherCondition(data.condition);
     }
   }, []);
 
   const refreshWeather = useCallback(() => {
-    dispatch({ type: "REFRESH" });
-    if (state.weather === null) return;
-    fetchWeather(state.weather!.location);
-  }, [state.weather]);
+    fetchWeather(city);
+  }, [query.data]);
 
   useEffect(() => {
     console.log("[Weather] Mount");
     // 預設載入一個城市
-    const fetchData = async () => fetchWeather("Taipei");
-
-    fetchData();
+    fetchWeather(city);
     return () => {
       console.log("[Weather] Unmount");
     };
   }, []);
 
   return {
-    state,
+    // state,
     temperatureUnits,
     city,
     setCity,
     fetchWeather,
     refreshWeather,
+
+    query,
   };
 };

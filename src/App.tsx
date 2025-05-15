@@ -7,19 +7,24 @@ import { Route, Routes } from "react-router-dom";
 import { AppSettingsProvider } from "./features/settings/AppSettingsProvider";
 import { AppSettings } from "./features/settings/AppSettingsView";
 import { WeatherLayout } from "./layouts/WeatherLayout";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function App() {
   // return <WeatherView />;
   return (
-    <AppSettingsProvider>
-      <Routes>
-        <Route path="/" element={<WeatherLayout />}>
-          <Route path="settings" element={<AppSettings />} />
-        </Route>
-        {/* <Route path="/" element={<WeatherView />} />
+    <QueryClientProvider client={queryClient}>
+      <AppSettingsProvider>
+        <Routes>
+          <Route path="/" element={<WeatherLayout />}>
+            <Route path="settings" element={<AppSettings />} />
+          </Route>
+          {/* <Route path="/" element={<WeatherView />} />
         <Route path="/settings" element={<AppSettings />} /> */}
-      </Routes>
-    </AppSettingsProvider>
+        </Routes>
+      </AppSettingsProvider>
+    </QueryClientProvider>
   );
 }
 

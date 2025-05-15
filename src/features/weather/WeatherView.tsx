@@ -14,34 +14,33 @@ export const WeatherView = () => {
   const isSettingsPage = location.pathname === "/settings";
 
   const {
-    state,
     temperatureUnits,
     city,
     setCity,
     fetchWeather,
     refreshWeather,
+    query,
   } = useWeatherView();
 
+  const { data: weather, isSuccess, isError, isLoading } = query;
+
   const renderContent = () => {
-    switch (state.status) {
-      case "initial":
-        return <WeatherEmpty></WeatherEmpty>;
-      case "loading":
-        return <WeatherLoading></WeatherLoading>;
-      case "failure":
-        return <WeatherError></WeatherError>;
-      case "success":
-        // if (state.weather === null) return <WeatherError></WeatherError>;
-        return (
-          <WeatherPopulated
-            weather={state.weather!}
-            units={temperatureUnits}
-            onRefresh={refreshWeather}
-          />
-        );
-      default:
-        return null;
+    if (isLoading) {
+      return <WeatherLoading />;
     }
+    if (isError) {
+      return <WeatherError />;
+    }
+    if (isSuccess && weather) {
+      return (
+        <WeatherPopulated
+          weather={weather}
+          units={temperatureUnits}
+          onRefresh={refreshWeather}
+        />
+      );
+    }
+    return null;
   };
 
   return (
@@ -57,7 +56,6 @@ export const WeatherView = () => {
           value={city}
           onChange={setCity}
           onSearch={async () => {
-            if (city.length === 0) return;
             await fetchWeather(city);
           }}
         />
